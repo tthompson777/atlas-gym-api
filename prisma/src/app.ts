@@ -3,12 +3,14 @@ import cors from 'cors';
 import 'dotenv/config';
 
 import { alunoRoutes } from './routes/aluno.routes';
+import { entradaRoutes } from './routes/entrada.routes';
 // import { verificarTokenFirebase } from '../../src/middlewares/firebase-auth.middleware';
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
+app.use('/api/entradas', entradaRoutes);
 app.use('/api/alunos', alunoRoutes);
 
 export default app;

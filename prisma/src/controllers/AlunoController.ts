@@ -17,12 +17,14 @@ export class AlunoController {
 
   async criar(req: Request, res: Response) {
   const data = req.body;
-  delete data.id; // Remove o id do corpo da requisição, se existir
+  delete data.id;
 
   const aluno = await prisma.aluno.create({
     data: {
       ...data,
       nascimento: new Date(data.nascimento),
+      fotoBase64: req.body.fotoBase64,
+      descriptor: data.descriptor ?? undefined
     },
   });
 
@@ -33,7 +35,12 @@ export class AlunoController {
     const id = Number(req.params.id);
     const aluno = await prisma.aluno.update({
       where: { id },
-      data: req.body
+      data: {
+      ...req.body,
+      fotoBase64: req.body.fotoBase64,
+      nascimento: new Date(req.body.nascimento),
+      descriptor: req.body.descriptor ?? undefined
+    }
     });
     res.json(aluno);
   }
@@ -46,9 +53,10 @@ export class AlunoController {
 
   async inativar(req: Request, res: Response) {
     const id = Number(req.params.id);
+    console.log(id);
     const aluno = await prisma.aluno.update({
       where: { id },
-      data: { status: 'inativo' }
+      data: { status: 'Inativo' }
     });
     res.json(aluno);
   }

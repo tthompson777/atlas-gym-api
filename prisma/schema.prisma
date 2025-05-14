@@ -20,6 +20,16 @@ model Aluno {
   bairro    String?
   cidade    String?
   pais      String?
-  status    String  @default("ativo")
+  status    String  @default("Ativo")
   criadoEm  DateTime @default(now())
+  fotoBase64 String? @db.Text
+  descriptor  Json?
+  entradas   Entrada[]
+}
+
+model Entrada {
+  id        Int      @id @default(autoincrement())
+  alunoId   Int
+  aluno     Aluno    @relation(fields: [alunoId], references: [id])
+  dataHora  DateTime @default(now())
 }
