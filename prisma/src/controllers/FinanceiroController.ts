@@ -1,0 +1,85 @@
+import { PrismaClient } from '@prisma/client';
+import { Request, Response } from 'express';
+
+const prisma = new PrismaClient();
+
+export class FinanceiroController {
+  async listar(req: Request, res: Response) {
+    const transacoes = await prisma.transacao.findMany({
+      include: { aluno: true },
+      orderBy: { dataHora: 'desc' }
+    });
+    res.json(transacoes);
+  }
+
+  async criar(req: Request, res: Response) {
+  let { tipo, categoria, valor, descricao, alunoId } = req.body;
+
+  if (!['entrada', 'saida'].includes(tipo)) {
+    return res.status(400).json({ mensagem: 'Tipo inválido' });
+  }
+
+  // 👇 Converte string para número ou null
+  alunoId = alunoId ? Number(alunoId) : null;
+
+  try {
+    const transacao = await prisma.transacao.create({
+      data: {
+        tipo,
+        categoria,
+        valor,
+        descricao,
+        alunoId,
+        dataHora: new Date()
+      }
+    });
+
+    res.status(201).json(transacao);
+  } catch (error) {
+    console.error('Erro ao criar transação:', error);
+    res.status(500).json({ mensagem: 'Erro ao criar transação.' });
+  }
+}
+
+  async obter(req: Request, res: Response) {
+    const id = Number(req.params.id);
+    const transacao = await prisma.transacao.findUnique({
+      where: { id },
+      include: { aluno: true }
+    });
+    res.json(transacao);
+  }
+
+  async excluir(req: Request, res: Response) {
+    const id = Number(req.params.id);
+    await prisma.transacao.delete({ where: { id } });
+    res.status(204).send();
+  }
+
+  async atualizar(req: Request, res: Response) {
+  const id = Number(req.params.id);
+  const { tipo, categoria, valor, descricao, alunoId } = req.body;
+
+  if (!['entrada', 'saida'].includes(tipo)) {
+    return res.status(400).json({ mensagem: 'Tipo inválido' });
+  }
+
+  try {
+    const transacao = await prisma.transacao.update({
+      where: { id },
+      data: {
+        tipo,
+        categoria,
+        valor,
+        descricao,
+        alunoId: alunoId ?? null
+      }
+    });
+
+    res.json(transacao);
+  } catch (error) {
+    console.error('Erro ao atualizar transação:', error);
+    res.status(500).json({ mensagem: 'Erro ao atualizar transação.' });
+  }
+}
+}

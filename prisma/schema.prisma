@@ -13,7 +13,7 @@ model Aluno {
   sexo      String
   nascimento DateTime
   telefone  String?
-  email     String?
+  email     String? @unique
   cpf       String  @unique
   rua       String?
   numero    String?
@@ -24,7 +24,10 @@ model Aluno {
   criadoEm  DateTime @default(now())
   fotoBase64 String? @db.Text
   descriptor  Json?
+  senha       String?
   entradas   Entrada[]
+
+  Transacao Transacao[]
 }
 
 model Entrada {
@@ -32,4 +35,15 @@ model Entrada {
   alunoId   Int
   aluno     Aluno    @relation(fields: [alunoId], references: [id])
   dataHora  DateTime @default(now())
+}
+
+model Transacao {
+  id         Int       @id @default(autoincrement())
+  tipo       String    // 'entrada' ou 'saida'
+  categoria  String    // Ex: 'Mensalidade', 'Água', etc.
+  valor      Float
+  descricao  String?
+  dataHora   DateTime  @default(now())
+  alunoId    Int?      // Opcional para entradas relacionadas a alunos
+  aluno      Aluno?    @relation(fields: [alunoId], references: [id])
 }
