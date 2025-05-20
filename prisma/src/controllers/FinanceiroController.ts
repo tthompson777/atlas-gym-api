@@ -15,7 +15,7 @@ export class FinanceiroController {
   async criar(req: Request, res: Response) {
   let { tipo, categoria, valor, descricao, alunoId } = req.body;
 
-  if (!['entrada', 'saida'].includes(tipo)) {
+  if (!['Entrada', 'Saida'].includes(tipo)) {
     return res.status(400).json({ mensagem: 'Tipo inválido' });
   }
 
@@ -60,7 +60,7 @@ export class FinanceiroController {
   const id = Number(req.params.id);
   const { tipo, categoria, valor, descricao, alunoId } = req.body;
 
-  if (!['entrada', 'saida'].includes(tipo)) {
+  if (!['Entrada', 'Saida'].includes(tipo)) {
     return res.status(400).json({ mensagem: 'Tipo inválido' });
   }
 

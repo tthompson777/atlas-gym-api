@@ -39,7 +39,7 @@ model Entrada {
 
 model Transacao {
   id         Int       @id @default(autoincrement())
-  tipo       String    // 'entrada' ou 'saida'
+  tipo       String    // 'Entrada' ou 'Saida'
   categoria  String    // Ex: 'Mensalidade', 'Água', etc.
   valor      Float
   descricao  String?
