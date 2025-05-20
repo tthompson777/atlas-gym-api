@@ -8,42 +8,61 @@ datasource db {
 }
 
 model Aluno {
-  id        Int     @id @default(autoincrement())
-  nome      String
-  sexo      String
+  id         Int              @id @default(autoincrement())
+  nome       String
+  sexo       String
   nascimento DateTime
-  telefone  String?
-  email     String? @unique
-  cpf       String  @unique
-  rua       String?
-  numero    String?
-  bairro    String?
-  cidade    String?
-  pais      String?
-  status    String  @default("Ativo")
-  criadoEm  DateTime @default(now())
-  fotoBase64 String? @db.Text
-  descriptor  Json?
-  senha       String?
-  entradas   Entrada[]
-
-  Transacao Transacao[]
+  telefone   String?
+  email      String?          @unique
+  cpf        String           @unique
+  rua        String?
+  numero     String?
+  bairro     String?
+  cidade     String?
+  pais       String?
+  status     String           @default("Ativo")
+  criadoEm   DateTime         @default(now())
+  fotoBase64 String?          @db.Text
+  descriptor Json?
+  senha      String?
+  entradas   RegistroAcesso[]
+  Transacao  Transacao[]
+  fichas     FichaExercicio[]
 }
 
-model Entrada {
-  id        Int      @id @default(autoincrement())
-  alunoId   Int
-  aluno     Aluno    @relation(fields: [alunoId], references: [id])
-  dataHora  DateTime @default(now())
+model RegistroAcesso {
+  id          Int       @id @default(autoincrement())
+  alunoId     Int
+  aluno       Aluno     @relation(fields: [alunoId], references: [id])
+  dataEntrada DateTime
+  dataSaida   DateTime? // Opcional até a saída ser registrada
 }
 
 model Transacao {
-  id         Int       @id @default(autoincrement())
-  tipo       String    // 'Entrada' ou 'Saida'
-  categoria  String    // Ex: 'Mensalidade', 'Água', etc.
-  valor      Float
-  descricao  String?
-  dataHora   DateTime  @default(now())
-  alunoId    Int?      // Opcional para entradas relacionadas a alunos
-  aluno      Aluno?    @relation(fields: [alunoId], references: [id])
+  id        Int      @id @default(autoincrement())
+  tipo      String // 'Entrada' ou 'Saida'
+  categoria String // Ex: 'Mensalidade', 'Água', etc.
+  valor     Float
+  descricao String?
+  dataHora  DateTime @default(now())
+  alunoId   Int? // Opcional para lançamentos relacionadas a alunos
+  aluno     Aluno?   @relation(fields: [alunoId], references: [id])
+}
+
+model FichaExercicio {
+  id          Int         @id @default(autoincrement())
+  aluno       Aluno       @relation(fields: [alunoId], references: [id])
+  alunoId     Int         @unique
+  dataCriacao DateTime    @default(now())
+  exercicios  Exercicio[]
+}
+
+model Exercicio {
+  id         Int            @id @default(autoincrement())
+  grupo      String
+  nome       String
+  series     Int
+  repeticoes Int
+  fichaId    Int
+  ficha      FichaExercicio @relation(fields: [fichaId], references: [id])
 }
