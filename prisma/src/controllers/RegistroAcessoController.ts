@@ -45,4 +45,34 @@ export class RegistroAcessoController {
     });
     res.json(registros);
   }
+
+  async verificarUltimoAcesso(req: Request, res: Response, next: unknown) {
+  const { alunoId } = req.params;
+
+  const agora = new Date();
+  const inicioDoDia = new Date(agora);
+  inicioDoDia.setHours(0, 0, 0, 0);
+
+  const ultimoRegistro = await prisma.registroAcesso.findFirst({
+    where: {
+      alunoId: Number(alunoId),
+      dataEntrada: { gte: inicioDoDia }
+    },
+    orderBy: { dataEntrada: 'desc' }
+  });
+
+  if (!ultimoRegistro) {
+    return res.json({ permitido: true });
+  }
+
+  const diffMs = agora.getTime() - new Date(ultimoRegistro.dataEntrada).getTime();
+  const diffSegundos = diffMs / 1000;
+
+  if (diffSegundos < 60) {
+    return res.json({ permitido: false, segundosRestantes: Math.ceil(60 - diffSegundos) });
+  }
+
+  return res.json({ permitido: true });
+}
+
 }
