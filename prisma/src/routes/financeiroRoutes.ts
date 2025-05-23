@@ -21,3 +21,10 @@ financeiroRoutes.put('/:id', async (req, res, next) => {
 });
 financeiroRoutes.get('/:id', controller.obter);
 financeiroRoutes.delete('/:id', controller.excluir);
+financeiroRoutes.post('/:id/gerar-pagamento', async (req, res, next) => {
+    try {
+        await controller.gerarPagamento(req, res);
+    } catch (error) {
+        next(error);
+    }
+});

@@ -20,7 +20,7 @@ model Aluno {
   bairro     String?
   cidade     String?
   pais       String?
-  status     String           @default("Ativo")
+  status     String           @default("Pendente")
   criadoEm   DateTime         @default(now())
   fotoBase64 String?          @db.Text
   descriptor Json?
@@ -47,6 +47,8 @@ model Transacao {
   dataHora  DateTime @default(now())
   alunoId   Int? // Opcional para lançamentos relacionadas a alunos
   aluno     Aluno?   @relation(fields: [alunoId], references: [id])
+  paymentLink     String?
+  statusPagamento String?
 }
 
 model FichaExercicio {

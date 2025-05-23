@@ -1,9 +1,52 @@
 import { PrismaClient } from '@prisma/client';
 import { Request, Response } from 'express';
+import { MercadoPagoConfig, Preference } from 'mercadopago';
 
 const prisma = new PrismaClient();
 
+// Inicializa SDK
+
+const mercadopago = new MercadoPagoConfig({
+  accessToken: process.env.MP_ACCESS_TOKEN || ''
+});
+const preferenceClient = new Preference(mercadopago);
+
 export class FinanceiroController {
+
+async gerarPagamento(req: Request, res: Response) {
+  const id = Number(req.params.id);
+  const transacao = await prisma.transacao.findUnique({ where: { id } });
+
+  if (!transacao) return res.status(404).json({ mensagem: 'Transação não encontrada.' });
+
+  const response = await preferenceClient.create({
+    body: {
+      items: [
+        {
+          id: String(transacao.id),
+          title: transacao.categoria,
+          unit_price: transacao.valor,
+          quantity: 1
+        }
+      ],
+      notification_url: process.env.WEBHOOK_URL,
+      external_reference: String(transacao.id)
+    }
+  });
+
+  const paymentLink = response.init_point;
+
+  await prisma.transacao.update({
+    where: { id },
+    data: {
+      paymentLink,
+      statusPagamento: 'Pendente'
+    }
+  });
+
+  res.json({ paymentLink });
+}
+
   async listar(req: Request, res: Response) {
     const transacoes = await prisma.transacao.findMany({
       include: { aluno: true },

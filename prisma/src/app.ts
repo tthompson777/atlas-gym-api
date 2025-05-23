@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import webhookRoutes from './routes/webhook.routes';
 import 'dotenv/config';
 
 import { alunoRoutes } from './routes/aluno.routes';
@@ -15,5 +16,6 @@ app.use('/api/registro-acesso', registroAcessoRoutes);
 app.use('/api/alunos', alunoRoutes);
 app.use('/api/financeiro', financeiroRoutes);
 app.use('/api/fichas', fichaRoutes);
+app.use('/webhook', webhookRoutes);
 
 export default app;
