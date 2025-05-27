@@ -28,6 +28,10 @@ model Aluno {
   entradas   RegistroAcesso[]
   Transacao  Transacao[]
   fichas     FichaExercicio[]
+
+  // Multiempresa
+  empresaId  Int
+  empresa    Empresa          @relation(fields: [empresaId], references: [id])
 }
 
 model RegistroAcesso {
@@ -67,4 +71,19 @@ model Exercicio {
   repeticoes Int
   fichaId    Int
   ficha      FichaExercicio @relation(fields: [fichaId], references: [id])
+}
+
+model Empresa {
+  id        Int      @id @default(autoincrement())
+  nome      String
+  email     String   @unique
+  uid       String   @unique // UID do Firebase do dono da empresa
+  criadoEm  DateTime @default(now())
+  alunos    Aluno[]
+}
+
+model Superadmin {
+  id       Int    @id @default(autoincrement())
+  email    String @unique
+  senha    String
 }
