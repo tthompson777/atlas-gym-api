@@ -13,10 +13,25 @@ const preferenceClient = new Preference(mercadopago);
 const prisma = new PrismaClient();
 
 export class AlunoController {
-  async listar(req: Request, res: Response) {
-    const alunos = await prisma.aluno.findMany();
-    res.json(alunos);
+  // async listar(req: Request, res: Response) {
+  //   const alunos = await prisma.aluno.findMany();
+  //   res.json(alunos);
+  // }
+
+async listar(req: Request, res: Response) {
+  const empresaId = (req.user as { empresaId: number })?.empresaId;
+
+  if (!empresaId) {
+    return res.status(400).json({ mensagem: 'empresaId não fornecido no usuário.' });
   }
+
+  const alunos = await prisma.aluno.findMany({
+    where: { empresaId },
+    orderBy: { nome: 'asc' }
+  });
+
+  res.json(alunos);
+}
 
   async obter(req: Request, res: Response) {
     const id = Number(req.params.id);
@@ -27,7 +42,7 @@ export class AlunoController {
   async criar(req: Request, res: Response) {
   const data = req.body;
   delete data.id;
-  console.log(process.env.MP_ACCESS_TOKEN);
+  const { empresaId } = req.user ?? {};
 
   try {
     const aluno = await prisma.aluno.create({
@@ -35,7 +50,8 @@ export class AlunoController {
         ...data,
         nascimento: new Date(data.nascimento),
         fotoBase64: req.body.fotoBase64,
-        descriptor: data.descriptor ?? undefined
+        descriptor: data.descriptor ?? undefined,
+        empresa: { connect: { id: empresaId } }
       },
     });
 

@@ -47,13 +47,31 @@ async gerarPagamento(req: Request, res: Response) {
   res.json({ paymentLink });
 }
 
+  // async listar(req: Request, res: Response) {
+  //   const transacoes = await prisma.transacao.findMany({
+  //     include: { aluno: true },
+  //     orderBy: { dataHora: 'desc' }
+  //   });
+  //   res.json(transacoes);
+  // }
   async listar(req: Request, res: Response) {
-    const transacoes = await prisma.transacao.findMany({
-      include: { aluno: true },
-      orderBy: { dataHora: 'desc' }
-    });
-    res.json(transacoes);
+  if (!req.user || typeof req.user.empresaId !== 'number') {
+    return res.status(400).json({ mensagem: 'empresaId não encontrado no usuário.' });
   }
+  const { empresaId } = req.user;
+
+  const transacoes = await prisma.transacao.findMany({
+    where: {
+      aluno: { empresaId }
+    },
+    include: {
+      aluno: true
+    },
+    orderBy: { dataHora: 'desc' }
+  });
+
+  res.json(transacoes);
+}
 
   async criar(req: Request, res: Response) {
   let { tipo, categoria, valor, descricao, alunoId } = req.body;

@@ -4,15 +4,35 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 export class FichaController {
-  async listar(req: Request, res: Response) {
-    const fichas = await prisma.fichaExercicio.findMany({
-      include: {
-        aluno: true,
-        exercicios: true
-      }
-    });
-    res.json(fichas);
+
+  // async listar(req: Request, res: Response) {
+  //   const fichas = await prisma.fichaExercicio.findMany({
+  //     include: {
+  //       aluno: true,
+  //       exercicios: true
+  //     }
+  //   });
+  //   res.json(fichas);
+  // }
+
+async listar(req: Request, res: Response) {
+  if (!req.user || typeof req.user.empresaId !== 'number') {
+    return res.status(401).json({ erro: 'Usuário não autenticado ou empresaId ausente.' });
   }
+  const { empresaId } = req.user;
+
+  const fichas = await prisma.fichaExercicio.findMany({
+    where: {
+      aluno: { empresaId }
+    },
+    include: {
+      aluno: true
+    },
+    orderBy: { dataCriacao: 'desc' }
+  });
+
+  res.json(fichas);
+}
 
   async obter(req: Request, res: Response) {
     const id = Number(req.params.id);

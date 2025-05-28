@@ -77,13 +77,25 @@ model Empresa {
   id        Int      @id @default(autoincrement())
   nome      String
   email     String   @unique
-  uid       String   @unique // UID do Firebase do dono da empresa
   criadoEm  DateTime @default(now())
   alunos    Aluno[]
+
+  Usuario Usuario[]
 }
 
 model Superadmin {
   id       Int    @id @default(autoincrement())
   email    String @unique
   senha    String
+}
+
+model Usuario {
+  id        Int      @id @default(autoincrement())
+  nome      String
+  email     String   @unique
+  senhaHash String
+  role      String   @default("admin") // Futuro: 'admin' ou 'funcionario'
+  empresaId Int
+  empresa   Empresa  @relation(fields: [empresaId], references: [id])
+  criadoEm  DateTime @default(now())
 }

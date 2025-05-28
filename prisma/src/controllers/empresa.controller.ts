@@ -1,13 +1,26 @@
 import { Request, Response, NextFunction } from 'express';
+import bcrypt from 'bcryptjs';
 import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
+// Extensão da interface Request para incluir o campo 'user'
+declare global {
+  namespace Express {
+    interface Request {
+      user?: { empresaId: number; [key: string]: any };
+    }
+  }
+}
+
 export class EmpresaController {
-  async buscarEmpresaPorUid(req: Request, res: Response, next: NextFunction) {
-    const uid = req.params.uid;
+  async buscarEmpresaDoUsuario(req: Request, res: Response, next: NextFunction) {
+    if (!req.user || typeof req.user.empresaId !== 'number') {
+      return res.status(401).json({ error: 'Usuário não autenticado ou empresaId ausente' });
+    }
+    const { empresaId } = req.user;
 
     const empresa = await prisma.empresa.findUnique({
-      where: { uid }
+      where: { id: empresaId }
     });
 
     if (!empresa) {
@@ -16,29 +29,40 @@ export class EmpresaController {
 
     return res.json({
       id: empresa.id,
-      nome: empresa.nome
+      nome: empresa.nome,
+      email: empresa.email
     });
   }
 
   async cadastrarEmpresa(req: Request, res: Response, next: NextFunction) {
-    const { nome, email, uid } = req.body;
+    const { nome, email } = req.body;
 
-    console.log('Recebido para cadastro:', req.body);
-
-    if (!nome || !email || !uid) {
-      return res.status(400).json({ error: 'Campos obrigatórios: nome, email, uid' });
+    if (!nome || !email) {
+      return res.status(400).json({ error: 'Campos obrigatórios: nome, email' });
     }
 
-    const empresaExistente = await prisma.empresa.findUnique({
-      where: { uid }
+    const empresaExistente = await prisma.empresa.findFirst({
+      where: { email }
     });
 
     if (empresaExistente) {
-      return res.status(409).json({ error: 'Empresa já cadastrada com este UID' });
+      return res.status(409).json({ error: 'Empresa já cadastrada com este e-mail' });
     }
 
     const novaEmpresa = await prisma.empresa.create({
-      data: { nome, email, uid }
+      data: { nome, email }
+    });
+
+    // Criação do usuário administrador com senha padrão
+    const senhaHash = await bcrypt.hash('123456', 10); // (ou gere aleatória e envie por e-mail no futuro)
+
+    await prisma.usuario.create({
+      data: {
+        nome: `Admin da ${nome}`,
+        email,
+        senhaHash,
+        empresaId: novaEmpresa.id
+      }
     });
 
     return res.status(201).json({
@@ -47,10 +71,11 @@ export class EmpresaController {
     });
   }
 
-  async listarTodas(req: Request, res: Response, next: unknown) {
-  const empresas = await prisma.empresa.findMany({
-    orderBy: { criadoEm: 'desc' }
+  async listarTodas(req: Request, res: Response, next: NextFunction) {
+    const empresas = await prisma.empresa.findMany({
+      orderBy: { criadoEm: 'desc' }
     });
+
     res.json(empresas);
-    }
+  }
 }

@@ -8,11 +8,14 @@ import { registroAcessoRoutes } from './routes/RegistroAcesso.routes';
 import { financeiroRoutes } from './routes/financeiroRoutes';
 import { fichaRoutes } from './routes/ficha.routes';
 import { empresaRoutes } from './routes/empresa.routes';
+import { authRoutes } from './routes/auth.routes';
+
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
+app.use('/api', authRoutes);
 app.use('/api/registro-acesso', registroAcessoRoutes);
 app.use('/api/alunos', alunoRoutes);
 app.use('/api/financeiro', financeiroRoutes);
