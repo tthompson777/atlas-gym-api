@@ -12,8 +12,17 @@ async function main() {
   await prisma.aluno.deleteMany({});
   await prisma.usuario.deleteMany({});
   await prisma.empresa.deleteMany({});
+  await prisma.superadmin.deleteMany({});
 
   const senhaHash = await bcrypt.hash('123456', 10);
+
+  // Cria Superadmin
+  await prisma.superadmin.create({
+    data: {
+      email: 'super@admin.com',
+      senha: senhaHash
+    }
+  });
 
   const empresa = await prisma.empresa.create({
     data: {

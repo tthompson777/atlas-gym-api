@@ -35,10 +35,18 @@ export class EmpresaController {
   }
 
   async cadastrarEmpresa(req: Request, res: Response, next: NextFunction) {
-    const { nome, email } = req.body;
+    const { 
+      nome, 
+      email, 
+      mpAccessToken, 
+      mpPublicKey,
+      adminNome,
+      adminEmail,
+      adminSenha 
+    } = req.body;
 
-    if (!nome || !email) {
-      return res.status(400).json({ error: 'Campos obrigatórios: nome, email' });
+    if (!nome || !email || !adminNome || !adminEmail || !adminSenha) {
+      return res.status(400).json({ error: 'Campos obrigatórios: nome, email, adminNome, adminEmail, adminSenha' });
     }
 
     const empresaExistente = await prisma.empresa.findFirst({
@@ -48,20 +56,34 @@ export class EmpresaController {
     if (empresaExistente) {
       return res.status(409).json({ error: 'Empresa já cadastrada com este e-mail' });
     }
-
-    const novaEmpresa = await prisma.empresa.create({
-      data: { nome, email }
+    
+    const usuarioExistente = await prisma.usuario.findUnique({
+      where: { email: adminEmail }
     });
 
-    // Criação do usuário administrador com senha padrão
-    const senhaHash = await bcrypt.hash('123456', 10); // (ou gere aleatória e envie por e-mail no futuro)
+    if (usuarioExistente) {
+        return res.status(409).json({ error: 'Já existe um usuário com o e-mail do admin informado.' });
+    }
+
+    const novaEmpresa = await prisma.empresa.create({
+      data: { 
+        nome, 
+        email,
+        mpAccessToken,
+        mpPublicKey
+      }
+    });
+
+    // Criação do usuário administrador
+    const senhaHash = await bcrypt.hash(adminSenha, 10);
 
     await prisma.usuario.create({
       data: {
-        nome: `Admin da ${nome}`,
-        email,
+        nome: adminNome,
+        email: adminEmail,
         senhaHash,
-        empresaId: novaEmpresa.id
+        empresaId: novaEmpresa.id,
+        role: 'admin'
       }
     });
 

@@ -74,11 +74,13 @@ model Exercicio {
 }
 
 model Empresa {
-  id        Int      @id @default(autoincrement())
-  nome      String
-  email     String   @unique
-  criadoEm  DateTime @default(now())
-  alunos    Aluno[]
+  id            Int      @id @default(autoincrement())
+  nome          String
+  email         String   @unique
+  mpAccessToken String?  @db.Text
+  mpPublicKey   String?  @db.Text
+  criadoEm      DateTime @default(now())
+  alunos        Aluno[]
 
   Usuario Usuario[]
 }

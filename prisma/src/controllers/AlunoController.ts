@@ -4,11 +4,6 @@ import { Request, Response } from 'express';
 import { emailService } from '../services/EmailService';
 import { Preference, MercadoPagoConfig } from 'mercadopago';
 
-const mercadopago = new MercadoPagoConfig({
-  accessToken: process.env.MP_ACCESS_TOKEN || ''
-});
-const preferenceClient = new Preference(mercadopago);
-
 const prisma = new PrismaClient();
 
 export class AlunoController {
@@ -43,7 +38,19 @@ async listar(req: Request, res: Response) {
   delete data.id;
   const { empresaId } = req.user ?? {};
 
+  if (!empresaId) {
+    return res.status(400).json({ mensagem: 'Usuário não autenticado ou sem empresa vinculada.' });
+  }
+
   try {
+    const empresa = await prisma.empresa.findUnique({
+      where: { id: empresaId }
+    });
+
+    if (!empresa) {
+      return res.status(404).json({ mensagem: 'Empresa não encontrada.' });
+    }
+
     const aluno = await prisma.aluno.create({
       data: {
         ...data,
@@ -66,40 +73,54 @@ async listar(req: Request, res: Response) {
       }
     });
 
-    // === GERA O LINK DE PAGAMENTO ===
-    const nomeParts = aluno.nome.split(' ');
-    const firstName = nomeParts[0];
-    const lastName = nomeParts.length > 1 ? nomeParts.slice(1).join(' ') : '';
+    // === GERA O LINK DE PAGAMENTO (Se houver Token configurado) ===
+    let paymentLink = null;
 
-    const response = await preferenceClient.create({
-      body: {
-        items: [
-          {
-            id: String(transacao.id),
-            title: transacao.categoria,
-            unit_price: transacao.valor,
-            quantity: 1
-          }
-        ],
-        payer: {
-          name: firstName,
-          surname: lastName,
-          email: aluno.email || 'email@teste.com'
-        },
-        notification_url: process.env.WEBHOOK_URL,
-        external_reference: String(transacao.id)
-      }
-    });
+    if (empresa.mpAccessToken) {
+      const mercadopago = new MercadoPagoConfig({
+        accessToken: empresa.mpAccessToken
+      });
+      const preferenceClient = new Preference(mercadopago);
 
-    const paymentLink = response.init_point;
+      const nomeParts = aluno.nome.split(' ');
+      const firstName = nomeParts[0];
+      const lastName = nomeParts.length > 1 ? nomeParts.slice(1).join(' ') : '';
 
-    await prisma.transacao.update({
-      where: { id: transacao.id },
-      data: {
-        paymentLink,
-        statusPagamento: 'Pendente'
-      }
-    });
+      // Adiciona o ID da empresa na notification_url para identificar no Webhook
+      const webhookUrl = `${process.env.WEBHOOK_URL}?empresaId=${empresaId}`;
+
+      const response = await preferenceClient.create({
+        body: {
+          items: [
+            {
+              id: String(transacao.id),
+              title: transacao.categoria,
+              unit_price: transacao.valor,
+              quantity: 1
+            }
+          ],
+          payer: {
+            name: firstName,
+            surname: lastName,
+            email: aluno.email || 'email@teste.com'
+          },
+          notification_url: webhookUrl,
+          external_reference: String(transacao.id)
+        }
+      });
+
+      paymentLink = response.init_point;
+
+      await prisma.transacao.update({
+        where: { id: transacao.id },
+        data: {
+          paymentLink,
+          statusPagamento: 'Pendente'
+        }
+      });
+    } else {
+      console.log('⚠️ Empresa sem Token do Mercado Pago configurado. Link de pagamento não gerado.');
+    }
 
     // === ENVIA E-MAIL COM O LINK DE PAGAMENTO (DESABILITADO TEMPORARIAMENTE) ===
     /*
