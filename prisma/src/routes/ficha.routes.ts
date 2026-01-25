@@ -1,8 +1,11 @@
 import { Router } from 'express';
 import { FichaController } from '../controllers/FichaController';
+import { authMiddleware } from '../middlewares/auth.middleware';
 
 export const fichaRoutes = Router();
 const controller = new FichaController();
+
+fichaRoutes.use(authMiddleware);
 
 fichaRoutes.get('/por-aluno/:alunoId', async (req, res, next) => {
   try {
@@ -11,7 +14,14 @@ fichaRoutes.get('/por-aluno/:alunoId', async (req, res, next) => {
     next(error);
   }
 });
-fichaRoutes.get('/', controller.listar);
+
+fichaRoutes.get('/', async (req, res, next) => {
+    try {
+        await controller.listar(req, res);
+    } catch (error) {
+        next(error);
+    }
+});
 fichaRoutes.get('/:id', async (req, res, next) => {
     try {
         await controller.obter(req, res);

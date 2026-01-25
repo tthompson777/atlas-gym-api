@@ -1,8 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { Request, Response } from 'express';
-
-import axios from 'axios';
+import { emailService } from '../services/EmailService';
 import { Preference, MercadoPagoConfig } from 'mercadopago';
 
 const mercadopago = new MercadoPagoConfig({
@@ -60,7 +59,7 @@ async listar(req: Request, res: Response) {
       data: {
         tipo: 'Entrada',
         categoria: 'Matrícula',
-        valor: 100.00, // ajuste conforme valor da matrícula
+        valor: 1.00, // ajuste conforme valor da matrícula
         descricao: 'Pagamento de matrícula',
         alunoId: aluno.id,
         dataHora: new Date()
@@ -68,6 +67,10 @@ async listar(req: Request, res: Response) {
     });
 
     // === GERA O LINK DE PAGAMENTO ===
+    const nomeParts = aluno.nome.split(' ');
+    const firstName = nomeParts[0];
+    const lastName = nomeParts.length > 1 ? nomeParts.slice(1).join(' ') : '';
+
     const response = await preferenceClient.create({
       body: {
         items: [
@@ -78,6 +81,11 @@ async listar(req: Request, res: Response) {
             quantity: 1
           }
         ],
+        payer: {
+          name: firstName,
+          surname: lastName,
+          email: aluno.email || 'email@teste.com'
+        },
         notification_url: process.env.WEBHOOK_URL,
         external_reference: String(transacao.id)
       }
@@ -93,20 +101,15 @@ async listar(req: Request, res: Response) {
       }
     });
 
-    // === ENVIA MENSAGEM PELO WHATSAPP ===
-    try {
-      await axios.post('http://localhost:3333/enviar-mensagem', {
-        telefone: aluno.telefone,
-        nome: aluno.nome,
-        linkPagamento: paymentLink
-      });
-    } catch (erro) {
-      if (erro instanceof Error) {
-        console.error('Erro ao enviar WhatsApp:', erro.message);
-      } else {
-        console.error('Erro ao enviar WhatsApp:', erro);
-      }
+    // === ENVIA E-MAIL COM O LINK DE PAGAMENTO (DESABILITADO TEMPORARIAMENTE) ===
+    /*
+    if (aluno.email && paymentLink) {
+      await emailService.enviarEmailBoasVindas(aluno.nome, aluno.email, paymentLink);
+    } else {
+      console.log('⚠️ E-mail ou Link de pagamento ausente, e-mail não enviado.');
     }
+    */
+    console.log('⚠️ Envio de e-mail desabilitado temporariamente.');
 
     res.status(201).json(aluno);
 

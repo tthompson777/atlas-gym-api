@@ -1,5 +1,3 @@
-// src/controllers/RegistroAcessoController.ts
-
 import { PrismaClient } from '@prisma/client';
 import { Request, Response } from 'express';
 
@@ -73,6 +71,21 @@ export class RegistroAcessoController {
   }
 
   return res.json({ permitido: true });
+}
+
+async listarPorAluno(req: Request, res: Response) {
+  const alunoId = Number(req.params.alunoId);
+
+  if (isNaN(alunoId)) {
+    return res.status(400).json({ mensagem: 'ID de aluno inválido.' });
+  }
+
+  const registros = await prisma.registroAcesso.findMany({
+    where: { alunoId },
+    orderBy: { dataEntrada: 'desc' }
+  });
+
+  res.json(registros);
 }
 
 }

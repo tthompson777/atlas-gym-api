@@ -1,10 +1,19 @@
 import { Router } from 'express';
 import { FinanceiroController } from '../controllers/FinanceiroController';
+import { authMiddleware } from '../middlewares/auth.middleware';
 
 export const financeiroRoutes = Router();
 const controller = new FinanceiroController();
 
-financeiroRoutes.get('/', controller.listar);
+financeiroRoutes.use(authMiddleware);
+
+financeiroRoutes.get('/', async (req, res, next) => {
+    try {
+        await controller.listar(req, res);
+    } catch (error) {
+        next(error);
+    }
+});
 financeiroRoutes.post('/', async (req, res, next) => {
     try {
         await controller.criar(req, res);

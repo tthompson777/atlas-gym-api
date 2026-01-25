@@ -14,3 +14,11 @@ registroAcessoRoutes.get('/', controller.listar);
 registroAcessoRoutes.get('/verificar-ultimo/:alunoId', (req, res, next) => {
   controller.verificarUltimoAcesso(req, res, next).catch(next);
 });
+
+registroAcessoRoutes.get('/aluno/:alunoId', async (req, res, next) => {
+  try {
+    await controller.listarPorAluno(req, res);
+  } catch (error) {
+    next(error);
+  }
+});

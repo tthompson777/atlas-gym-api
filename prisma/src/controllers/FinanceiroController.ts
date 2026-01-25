@@ -55,10 +55,10 @@ async gerarPagamento(req: Request, res: Response) {
   //   res.json(transacoes);
   // }
   async listar(req: Request, res: Response) {
-  if (!req.user || typeof req.user.empresaId !== 'number') {
+  if (!req.user || !req.user.empresaId) {
     return res.status(400).json({ mensagem: 'empresaId não encontrado no usuário.' });
   }
-  const { empresaId } = req.user;
+  const empresaId = Number(req.user.empresaId);
 
   const transacoes = await prisma.transacao.findMany({
     where: {

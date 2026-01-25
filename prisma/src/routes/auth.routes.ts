@@ -1,22 +1,8 @@
-// backend/routes/auth.routes.ts
 import { Router } from 'express';
-import { AuthController } from '../controllers/AuthController';
+import { login } from '../controllers/auth.controller';
 
-export const authRoutes = Router();
-const controller = new AuthController();
+const router = Router();
 
-authRoutes.post('/login', async (req, res, next) => {
-  try {
-    await controller.login(req, res);
-  } catch (error) {
-    next(error);
-  }
-});
+router.post('/login', login);
 
-authRoutes.post('/registro', async (req, res, next) => {
-  try {
-    await controller.registrar(req, res);
-  } catch (error) {
-    next(error);
-  }
-});
+export default router;

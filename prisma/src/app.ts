@@ -8,7 +8,7 @@ import { registroAcessoRoutes } from './routes/RegistroAcesso.routes';
 import { financeiroRoutes } from './routes/financeiroRoutes';
 import { fichaRoutes } from './routes/ficha.routes';
 import { empresaRoutes } from './routes/empresa.routes';
-import { authRoutes } from './routes/auth.routes';
+import authRoutes from './routes/auth.routes';
 
 
 const app = express();
