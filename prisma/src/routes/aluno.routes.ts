@@ -17,6 +17,13 @@ alunoRoutes.get('/:id', controller.obter);
 alunoRoutes.put('/:id', controller.atualizar);
 alunoRoutes.delete('/:id', controller.excluir);
 alunoRoutes.patch('/:id/inativar', controller.inativar);
+alunoRoutes.patch('/:id/status', async (req, res, next) => {
+  try {
+    await controller.alterarStatus(req, res);
+  } catch (error) {
+    next(error);
+  }
+});
 alunoRoutes.post('/', authMiddleware, async (req, res, next) => {
   try {
     await controller.criar(req, res);

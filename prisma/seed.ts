@@ -36,7 +36,7 @@ async function main() {
       nome: 'Admin',
       email: 'admin@admin.com',
       senhaHash,
-      role: 'admin',
+      role: 0,
       empresaId: empresa.id,
     },
   });

@@ -20,3 +20,11 @@ empresaRoutes.get('/', (req, res, next) => {
 empresaRoutes.get('/minha', authMiddleware, (req, res, next) => {
   controller.buscarEmpresaDoUsuario(req, res, next).catch(next);
 });
+
+empresaRoutes.get('/:id', (req, res, next) => {
+  controller.buscarPorId(req, res, next).catch(next);
+});
+
+empresaRoutes.put('/:id', (req, res, next) => {
+  controller.atualizarEmpresa(req, res, next).catch(next);
+});

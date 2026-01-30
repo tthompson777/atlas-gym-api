@@ -188,6 +188,17 @@ async listar(req: Request, res: Response) {
     res.json(aluno);
   }
 
+  async alterarStatus(req: Request, res: Response) {
+    const id = Number(req.params.id);
+    const { status } = req.body;
+
+    const aluno = await prisma.aluno.update({
+      where: { id },
+      data: { status }
+    });
+    res.json(aluno);
+  }
+
   async autenticarPorSenha(req: Request, res: Response) {
     const { senha } = req.body;
 

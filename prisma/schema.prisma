@@ -96,7 +96,7 @@ model Usuario {
   nome      String
   email     String   @unique
   senhaHash String
-  role      String   @default("admin") // Futuro: 'admin' ou 'funcionario'
+  role      Int      @default(0) // 0=Admin, 1=Recepção, 2=Professor
   empresaId Int
   empresa   Empresa  @relation(fields: [empresaId], references: [id])
   criadoEm  DateTime @default(now())

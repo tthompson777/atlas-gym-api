@@ -39,7 +39,7 @@ async function main() {
       nome: 'Novo Admin',
       email,
       senhaHash,
-      role: 'admin',
+      role: 0,
       empresaId: empresa.id, // Vincula à empresa encontrada/criada
     },
   });

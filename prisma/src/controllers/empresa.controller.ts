@@ -83,7 +83,7 @@ export class EmpresaController {
         email: adminEmail,
         senhaHash,
         empresaId: novaEmpresa.id,
-        role: 'admin'
+        role: 0
       }
     });
 
@@ -99,5 +99,41 @@ export class EmpresaController {
     });
 
     res.json(empresas);
+  }
+
+  async buscarPorId(req: Request, res: Response, next: NextFunction) {
+    const { id } = req.params;
+
+    const empresa = await prisma.empresa.findUnique({
+      where: { id: Number(id) }
+    });
+
+    if (!empresa) {
+      return res.status(404).json({ error: 'Empresa não encontrada' });
+    }
+
+    return res.json(empresa);
+  }
+
+  async atualizarEmpresa(req: Request, res: Response, next: NextFunction) {
+    const { id } = req.params;
+    const { nome, email, mpAccessToken, mpPublicKey } = req.body;
+
+    try {
+      const empresa = await prisma.empresa.update({
+        where: { id: Number(id) },
+        data: {
+          nome,
+          email,
+          mpAccessToken,
+          mpPublicKey
+        }
+      });
+
+      return res.json(empresa);
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ error: 'Erro ao atualizar empresa' });
+    }
   }
 }
