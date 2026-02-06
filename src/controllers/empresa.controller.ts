@@ -3,15 +3,6 @@ import bcrypt from 'bcryptjs';
 import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
-// Extensão da interface Request para incluir o campo 'user'
-declare global {
-  namespace Express {
-    interface Request {
-      user?: { empresaId: number; [key: string]: any };
-    }
-  }
-}
-
 export class EmpresaController {
   async buscarEmpresaDoUsuario(req: Request, res: Response, next: NextFunction) {
     if (!req.user || typeof req.user.empresaId !== 'number') {

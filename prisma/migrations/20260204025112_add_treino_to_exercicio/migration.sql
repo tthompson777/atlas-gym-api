@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `Exercicio` ADD COLUMN `treino` VARCHAR(191) NOT NULL DEFAULT 'A';

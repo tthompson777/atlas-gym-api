@@ -25,42 +25,49 @@ model Aluno {
   fotoBase64 String?          @db.Text
   descriptor Json?
   senha      String?
-  entradas   RegistroAcesso[]
-  Transacao  Transacao[]
-  fichas     FichaExercicio[]
-
-  // Multiempresa
   empresaId  Int
   empresa    Empresa          @relation(fields: [empresaId], references: [id])
+  fichas     FichaExercicio?
+  entradas   RegistroAcesso[]
+  Transacao  Transacao[]
+
+  @@index([empresaId], map: "Aluno_empresaId_fkey")
 }
 
 model RegistroAcesso {
   id          Int       @id @default(autoincrement())
   alunoId     Int
-  aluno       Aluno     @relation(fields: [alunoId], references: [id])
   dataEntrada DateTime
-  dataSaida   DateTime? // Opcional até a saída ser registrada
+  dataSaida   DateTime?
+  aluno       Aluno     @relation(fields: [alunoId], references: [id])
+
+  @@index([alunoId], map: "RegistroAcesso_alunoId_fkey")
 }
 
 model Transacao {
-  id        Int      @id @default(autoincrement())
-  tipo      String // 'Entrada' ou 'Saida'
-  categoria String // Ex: 'Mensalidade', 'Água', etc.
-  valor     Float
-  descricao String?
-  dataHora  DateTime @default(now())
-  alunoId   Int? // Opcional para lançamentos relacionadas a alunos
-  aluno     Aluno?   @relation(fields: [alunoId], references: [id])
+  id              Int      @id @default(autoincrement())
+  tipo            String
+  categoria       String
+  valor           Float
+  descricao       String?
+  dataHora        DateTime @default(now())
+  alunoId         Int?
   paymentLink     String?
   statusPagamento String?
+  empresaId       Int
+  aluno           Aluno?   @relation(fields: [alunoId], references: [id])
+  empresa         Empresa  @relation(fields: [empresaId], references: [id])
+
+  @@index([alunoId], map: "Transacao_alunoId_fkey")
+  @@index([empresaId], map: "Transacao_empresaId_fkey")
 }
 
 model FichaExercicio {
   id          Int         @id @default(autoincrement())
-  aluno       Aluno       @relation(fields: [alunoId], references: [id])
   alunoId     Int         @unique
   dataCriacao DateTime    @default(now())
   exercicios  Exercicio[]
+  aluno       Aluno       @relation(fields: [alunoId], references: [id])
 }
 
 model Exercicio {
@@ -69,26 +76,29 @@ model Exercicio {
   nome       String
   series     Int
   repeticoes Int
+  treino     String         @default("A") // "A", "B", "C"
   fichaId    Int
   ficha      FichaExercicio @relation(fields: [fichaId], references: [id])
+
+  @@index([fichaId], map: "Exercicio_fichaId_fkey")
 }
 
 model Empresa {
-  id            Int      @id @default(autoincrement())
+  id            Int         @id @default(autoincrement())
   nome          String
-  email         String   @unique
-  mpAccessToken String?  @db.Text
-  mpPublicKey   String?  @db.Text
-  criadoEm      DateTime @default(now())
+  email         String      @unique
+  mpAccessToken String?     @db.Text
+  mpPublicKey   String?     @db.Text
+  criadoEm      DateTime    @default(now())
   alunos        Aluno[]
-
-  Usuario Usuario[]
+  transacoes    Transacao[]
+  Usuario       Usuario[]
 }
 
 model Superadmin {
-  id       Int    @id @default(autoincrement())
-  email    String @unique
-  senha    String
+  id    Int    @id @default(autoincrement())
+  email String @unique
+  senha String
 }
 
 model Usuario {
@@ -96,8 +106,10 @@ model Usuario {
   nome      String
   email     String   @unique
   senhaHash String
-  role      Int      @default(0) // 0=Admin, 1=Recepção, 2=Professor
+  role      Int      @default(0)
   empresaId Int
-  empresa   Empresa  @relation(fields: [empresaId], references: [id])
   criadoEm  DateTime @default(now())
+  empresa   Empresa  @relation(fields: [empresaId], references: [id])
+
+  @@index([empresaId], map: "Usuario_empresaId_fkey")
 }

@@ -1,7 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { Request, Response } from 'express';
-import { emailService } from '../services/EmailService';
+// import { emailService } from '../services/EmailService';
 import { Preference, MercadoPagoConfig } from 'mercadopago';
 
 const prisma = new PrismaClient();
@@ -69,7 +69,8 @@ async listar(req: Request, res: Response) {
         valor: 1.00, // ajuste conforme valor da matrícula
         descricao: 'Pagamento de matrícula',
         alunoId: aluno.id,
-        dataHora: new Date()
+        dataHora: new Date(),
+        empresaId: empresaId // Adicionado campo obrigatório empresaId
       }
     });
 
@@ -174,6 +175,12 @@ async listar(req: Request, res: Response) {
   }
 
   async excluir(req: Request, res: Response) {
+    // Check if user is authenticated and has role 0 (Admin)
+    const userRole = (req.user as { role: number; empresaId: number })?.role;
+    if (userRole !== 0) {
+      return res.status(403).json({ mensagem: 'Apenas administradores podem excluir alunos.' });
+    }
+
     const id = Number(req.params.id);
     await prisma.aluno.delete({ where: { id } });
     res.status(204).send();

@@ -74,10 +74,19 @@ async gerarPagamento(req: Request, res: Response) {
 }
 
   async criar(req: Request, res: Response) {
-  let { tipo, categoria, valor, descricao, alunoId } = req.body;
+  let { tipo, categoria, valor, descricao, alunoId, empresaId } = req.body;
 
   if (!['Entrada', 'Saida'].includes(tipo)) {
     return res.status(400).json({ mensagem: 'Tipo inválido' });
+  }
+
+  // Se não vier empresaId no corpo, tenta pegar do usuário logado (token)
+  if (!empresaId && req.user?.empresaId) {
+    empresaId = req.user.empresaId;
+  }
+
+  if (!empresaId) {
+    return res.status(400).json({ mensagem: 'empresaId é obrigatório.' });
   }
 
   // 👇 Converte string para número ou null
@@ -91,7 +100,8 @@ async gerarPagamento(req: Request, res: Response) {
         valor,
         descricao,
         alunoId,
-        dataHora: new Date()
+        dataHora: new Date(),
+        empresaId: Number(empresaId)
       }
     });
 

@@ -1,21 +1,31 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
-interface TokenPayload {
+// Estende a interface Request do Express globalmente
+declare global {
+  namespace Express {
+    interface Request {
+      user?: TokenPayload;
+    }
+  }
+}
+
+export interface TokenPayload {
   userId: number;
   empresaId: number;
-  role: string;
+  role: number;
 }
 
 export function authMiddleware(
-  req: Request & { user?: TokenPayload },
+  req: Request,
   res: Response,
   next: NextFunction
-) {
+): void {
   const authHeader = req.headers.authorization;
 
   if (!authHeader?.startsWith('Bearer ')) {
-    return res.status(401).json({ erro: 'Token não fornecido.' });
+    res.status(401).json({ erro: 'Token não fornecido.' });
+    return;
   }
 
   const token = authHeader.split(' ')[1];
@@ -25,6 +35,6 @@ export function authMiddleware(
     req.user = decoded;
     next();
   } catch {
-    return res.status(401).json({ erro: 'Token inválido ou expirado.' });
+    res.status(401).json({ erro: 'Token inválido ou expirado.' });
   }
 }

@@ -38,7 +38,14 @@ async listar(req: Request, res: Response) {
     const id = Number(req.params.id);
     const ficha = await prisma.fichaExercicio.findUnique({
       where: { id },
-      include: { aluno: true, exercicios: true }
+      include: { 
+        aluno: {
+          include: {
+            empresa: true
+          }
+        }, 
+        exercicios: true 
+      }
     });
     if (!ficha) return res.status(404).json({ erro: 'Ficha não encontrada' });
     res.json(ficha);
@@ -55,11 +62,20 @@ async listar(req: Request, res: Response) {
       return res.status(400).json({ erro: 'Este aluno já possui uma ficha cadastrada.' });
     }
 
+    // Sanitização dos exercícios para garantir compatibilidade com o Prisma
+    const exerciciosData = exercicios.map((ex: any) => ({
+      grupo: ex.grupo,
+      nome: ex.nome,
+      series: Number(ex.series),
+      repeticoes: Number(ex.repeticoes),
+      treino: ex.treino || 'A'
+    }));
+
     const ficha = await prisma.fichaExercicio.create({
       data: {
         alunoId,
         exercicios: {
-          create: exercicios
+          create: exerciciosData
         }
       },
       include: { exercicios: true }
@@ -71,6 +87,15 @@ async listar(req: Request, res: Response) {
     const id = Number(req.params.id);
     const { exercicios } = req.body;
 
+    // Sanitização dos exercícios
+    const exerciciosData = exercicios.map((ex: any) => ({
+      grupo: ex.grupo,
+      nome: ex.nome,
+      series: Number(ex.series),
+      repeticoes: Number(ex.repeticoes),
+      treino: ex.treino || 'A'
+    }));
+
     // Deleta exercícios anteriores
     await prisma.exercicio.deleteMany({ where: { fichaId: id } });
 
@@ -79,7 +104,7 @@ async listar(req: Request, res: Response) {
       where: { id },
       data: {
         exercicios: {
-          create: exercicios
+          create: exerciciosData
         }
       },
       include: { exercicios: true }
