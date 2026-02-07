@@ -14,9 +14,6 @@ alunoRoutes.get('/', authMiddleware, async (req, res, next) => {
   }
 });
 
-
-
-
 alunoRoutes.post('/autenticar-cpf', async (req, res, next) => {
 	try {
 		await controller.autenticarPorCpf(req, res);
@@ -56,5 +53,3 @@ alunoRoutes.post('/autenticar-senha', async (req, res, next) => {
 		next(error);
 	}
 });
-
-
