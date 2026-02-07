@@ -13,6 +13,18 @@ alunoRoutes.get('/', authMiddleware, async (req, res, next) => {
     next(error);
   }
 });
+
+
+
+
+alunoRoutes.post('/autenticar-cpf', async (req, res, next) => {
+	try {
+		await controller.autenticarPorCpf(req, res);
+	} catch (error) {
+		next(error);
+	}
+});
+
 alunoRoutes.get('/:id', controller.obter);
 alunoRoutes.put('/:id', controller.atualizar);
 alunoRoutes.delete('/:id', authMiddleware, async (req, res, next) => {
@@ -45,10 +57,4 @@ alunoRoutes.post('/autenticar-senha', async (req, res, next) => {
 	}
 });
 
-alunoRoutes.post('/autenticar-cpf', async (req, res, next) => {
-	try {
-		await controller.autenticarPorCpf(req, res);
-	} catch (error) {
-		next(error);
-	}
-});
+
