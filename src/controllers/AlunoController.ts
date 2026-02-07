@@ -33,6 +33,46 @@ async listar(req: Request, res: Response) {
     res.json(aluno);
   }
 
+  async autenticarPorCpf(req: Request, res: Response) {
+    const { cpf, empresaId } = req.body;
+
+    if (!cpf) {
+      return res.status(400).json({ mensagem: 'CPF não fornecido' });
+    }
+
+    if (!empresaId) {
+      return res.status(400).json({ mensagem: 'ID da empresa não fornecido' });
+    }
+
+    const cpfLimpo = cpf.replace(/\D/g, '');
+    const cpfFormatado = cpfLimpo.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+
+    // Busca o aluno pelo CPF (limpo ou formatado) e Empresa
+    const alunos = await prisma.aluno.findMany({
+      where: { 
+        OR: [
+          { cpf: cpfLimpo },
+          { cpf: cpfFormatado },
+          { cpf: cpf }
+        ],
+        empresaId: Number(empresaId)
+      }
+    });
+
+    if (!alunos || alunos.length === 0) {
+      return res.status(404).json({ mensagem: 'CPF incorreto ou aluno não encontrado nesta empresa.' });
+    }
+
+    // Prioriza ativo
+    const alunoAtivo = alunos.find(a => a.status === 'Ativo');
+    
+    if (alunoAtivo) {
+      return res.json(alunoAtivo);
+    }
+
+    res.json(alunos[0]);
+  }
+
   async criar(req: Request, res: Response) {
   const data = req.body;
   delete data.id;
@@ -213,14 +253,23 @@ async listar(req: Request, res: Response) {
       return res.status(400).json({ mensagem: 'Senha não fornecida' });
     }
 
-    const aluno = await prisma.aluno.findFirst({
+    // Busca todos os alunos com a senha informada
+    const alunos = await prisma.aluno.findMany({
       where: { senha }
     });
 
-    if (!aluno) {
+    if (!alunos || alunos.length === 0) {
       return res.status(404).json({ mensagem: 'Senha incorreta' });
     }
 
-    res.json(aluno);
+    // Prioriza o aluno com status 'Ativo'
+    const alunoAtivo = alunos.find(a => a.status === 'Ativo');
+
+    if (alunoAtivo) {
+      return res.json(alunoAtivo);
+    }
+
+    // Se não houver ativo, retorna o primeiro encontrado (que será bloqueado pelo frontend se não for ativo)
+    res.json(alunos[0]);
   }
 }

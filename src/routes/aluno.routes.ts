@@ -44,3 +44,11 @@ alunoRoutes.post('/autenticar-senha', async (req, res, next) => {
 		next(error);
 	}
 });
+
+alunoRoutes.post('/autenticar-cpf', async (req, res, next) => {
+	try {
+		await controller.autenticarPorCpf(req, res);
+	} catch (error) {
+		next(error);
+	}
+});
