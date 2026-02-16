@@ -1,0 +1,18 @@
+-- AlterTable
+ALTER TABLE `Aluno` ADD COLUMN `autorizaMarketing` BOOLEAN NOT NULL DEFAULT false,
+    ADD COLUMN `cep` VARCHAR(191) NULL,
+    ADD COLUMN `codigoPromocional` VARCHAR(191) NULL,
+    ADD COLUMN `complemento` VARCHAR(191) NULL,
+    ADD COLUMN `dataInicio` DATETIME(3) NULL,
+    ADD COLUMN `estado` VARCHAR(191) NULL,
+    ADD COLUMN `formaPagamento` VARCHAR(191) NULL,
+    ADD COLUMN `gympassId` VARCHAR(191) NULL,
+    ADD COLUMN `nivel` VARCHAR(191) NULL,
+    ADD COLUMN `origem` VARCHAR(191) NULL,
+    ADD COLUMN `parcelas` INTEGER NULL,
+    ADD COLUMN `parcelasAdesao` INTEGER NULL,
+    ADD COLUMN `parcelasManutencao` INTEGER NULL,
+    ADD COLUMN `plano` VARCHAR(191) NULL,
+    ADD COLUMN `responsavel` VARCHAR(191) NULL,
+    ADD COLUMN `rg` VARCHAR(191) NULL,
+    ADD COLUMN `vendedor` VARCHAR(191) NULL;

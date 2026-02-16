@@ -95,6 +95,7 @@ async listar(req: Request, res: Response) {
       data: {
         ...data,
         nascimento: new Date(data.nascimento),
+        dataInicio: data.dataInicio ? new Date(data.dataInicio) : undefined,
         fotoBase64: req.body.fotoBase64,
         descriptor: data.descriptor ?? undefined,
         empresa: { connect: { id: empresaId } }
@@ -207,7 +208,8 @@ async listar(req: Request, res: Response) {
       data: {
         ...req.body,
         fotoBase64: req.body.fotoBase64,
-        nascimento: new Date(req.body.nascimento),
+        nascimento: req.body.nascimento ? new Date(req.body.nascimento) : undefined,
+        dataInicio: req.body.dataInicio ? new Date(req.body.dataInicio) : undefined,
         descriptor: req.body.descriptor ?? undefined
       }
     });
@@ -222,8 +224,28 @@ async listar(req: Request, res: Response) {
     }
 
     const id = Number(req.params.id);
-    await prisma.aluno.delete({ where: { id } });
-    res.status(204).send();
+
+    try {
+      // 1. Delete associated Exercicio (via FichaExercicio)
+      const ficha = await prisma.fichaExercicio.findUnique({ where: { alunoId: id } });
+      if (ficha) {
+          await prisma.exercicio.deleteMany({ where: { fichaId: ficha.id } });
+          await prisma.fichaExercicio.delete({ where: { id: ficha.id } });
+      }
+
+      // 2. Delete RegistroAcesso
+      await prisma.registroAcesso.deleteMany({ where: { alunoId: id } });
+
+      // 3. Delete Transacao
+      await prisma.transacao.deleteMany({ where: { alunoId: id } });
+
+      // 4. Delete Aluno
+      await prisma.aluno.delete({ where: { id } });
+      res.status(204).send();
+    } catch (error) {
+      console.error('Erro ao excluir aluno:', error);
+      res.status(500).json({ mensagem: 'Erro ao excluir aluno. Verifique se existem dependências.' });
+    }
   }
 
   async inativar(req: Request, res: Response) {

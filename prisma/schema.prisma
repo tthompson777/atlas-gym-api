@@ -8,28 +8,49 @@ datasource db {
 }
 
 model Aluno {
-  id         Int              @id @default(autoincrement())
-  nome       String
-  sexo       String
-  nascimento DateTime
-  telefone   String?
-  email      String?          @unique
-  cpf        String           @unique
-  rua        String?
-  numero     String?
-  bairro     String?
-  cidade     String?
-  pais       String?
-  status     String           @default("Pendente")
-  criadoEm   DateTime         @default(now())
-  fotoBase64 String?          @db.Text
-  descriptor Json?
-  senha      String?
-  empresaId  Int
-  empresa    Empresa          @relation(fields: [empresaId], references: [id])
-  fichas     FichaExercicio?
-  entradas   RegistroAcesso[]
-  Transacao  Transacao[]
+  id                 Int              @id @default(autoincrement())
+  nome               String
+  sexo               String
+  nascimento         DateTime
+  telefone           String?
+  email              String?          @unique
+  cpf                String           @unique
+  rg                 String?
+  responsavel        String?
+  gympassId          String?
+  autorizaMarketing  Boolean          @default(false)
+  origem             String?
+  nivel              String?
+  cep                String?
+  rua                String?
+  numero             String?
+  complemento        String?
+  bairro             String?
+  cidade             String?
+  estado             String?
+  pais               String?
+  status             String           @default("Pendente")
+  criadoEm           DateTime         @default(now())
+  fotoBase64         String?          @db.Text
+  descriptor         Json?
+  senha              String?
+  empresaId          Int
+  
+  // Dados do Contrato
+  unidade            String?
+  dataInicio         DateTime?
+  parcelas           Int?
+  parcelasManutencao Int?
+  parcelasAdesao     Int?
+  plano              String?
+  codigoPromocional  String?
+  vendedor           String?
+  formaPagamento     String?
+
+  empresa            Empresa          @relation(fields: [empresaId], references: [id])
+  fichas             FichaExercicio?
+  entradas           RegistroAcesso[]
+  Transacao          Transacao[]
 
   @@index([empresaId], map: "Aluno_empresaId_fkey")
 }
