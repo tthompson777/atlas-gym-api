@@ -71,6 +71,9 @@ model Transacao {
   categoria       String
   valor           Float
   descricao       String?
+  vencimento      DateTime @default(now())
+  dataPagamento   DateTime?
+  observacoes     String?
   dataHora        DateTime @default(now())
   alunoId         Int?
   paymentLink     String?

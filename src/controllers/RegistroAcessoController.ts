@@ -66,8 +66,8 @@ export class RegistroAcessoController {
   const diffMs = agora.getTime() - new Date(ultimoRegistro.dataEntrada).getTime();
   const diffSegundos = diffMs / 1000;
 
-  if (diffSegundos < 60) {
-    return res.json({ permitido: false, segundosRestantes: Math.ceil(60 - diffSegundos) });
+  if (diffSegundos < 5) {
+    return res.json({ permitido: false, segundosRestantes: Math.ceil(5 - diffSegundos) });
   }
 
   return res.json({ permitido: true });

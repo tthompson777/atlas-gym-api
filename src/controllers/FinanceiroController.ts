@@ -62,7 +62,7 @@ async gerarPagamento(req: Request, res: Response) {
 
   const transacoes = await prisma.transacao.findMany({
     where: {
-      aluno: { empresaId }
+      empresaId
     },
     include: {
       aluno: true
@@ -74,7 +74,7 @@ async gerarPagamento(req: Request, res: Response) {
 }
 
   async criar(req: Request, res: Response) {
-  let { tipo, categoria, valor, descricao, alunoId, empresaId } = req.body;
+  let { tipo, categoria, valor, descricao, alunoId, empresaId, vencimento, dataPagamento, observacoes } = req.body;
 
   if (!['Entrada', 'Saida'].includes(tipo)) {
     return res.status(400).json({ mensagem: 'Tipo inválido' });
@@ -101,7 +101,10 @@ async gerarPagamento(req: Request, res: Response) {
         descricao,
         alunoId,
         dataHora: new Date(),
-        empresaId: Number(empresaId)
+        empresaId: Number(empresaId),
+        vencimento: vencimento ? new Date(vencimento) : new Date(),
+        dataPagamento: dataPagamento ? new Date(dataPagamento) : null,
+        observacoes
       }
     });
 
@@ -129,7 +132,7 @@ async gerarPagamento(req: Request, res: Response) {
 
   async atualizar(req: Request, res: Response) {
   const id = Number(req.params.id);
-  const { tipo, categoria, valor, descricao, alunoId } = req.body;
+  const { tipo, categoria, valor, descricao, alunoId, vencimento, dataPagamento, observacoes } = req.body;
 
   if (!['Entrada', 'Saida'].includes(tipo)) {
     return res.status(400).json({ mensagem: 'Tipo inválido' });
@@ -143,7 +146,10 @@ async gerarPagamento(req: Request, res: Response) {
         categoria,
         valor,
         descricao,
-        alunoId: alunoId ?? null
+        alunoId: alunoId ?? null,
+        vencimento: vencimento ? new Date(vencimento) : undefined,
+        dataPagamento: dataPagamento ? new Date(dataPagamento) : null,
+        observacoes
       }
     });
 

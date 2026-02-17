@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE `Transacao` ADD COLUMN `dataPagamento` DATETIME(3) NULL,
+    ADD COLUMN `observacoes` VARCHAR(191) NULL,
+    ADD COLUMN `vencimento` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3);
